@@ -1,0 +1,75 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+    - refs/tags/v*
+pr:
+- master
+
+
+pool:
+  name: Hosted VS2017
+
+steps:
+
+- script: |
+    curl -o mingw32.7z -L http://downloads.sourceforge.net/mingw-w64/i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
+    7z x mingw32.7z -y
+    npm install
+  displayName: 'install mingw32'
+
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $env:Path="$pwd/mingw32/bin;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\Program Files\nodejs\;C:\npm\prefix;C:\Program Files\Git\mingw64\bin;C:\Program Files\CMake\bin;"
+      npm run windows_x86
+      rm dist/*.ilk
+      mv dist/libbt.pdb binary/libbt.pdb
+      ls dist
+  displayName: 'build windows_x86'
+
+- task: cURLUploader@2
+  displayName: 'Upload pdb'
+  inputs:
+    files: 'binary/libbt.pdb'
+    serviceEndpoint: 'csding.net'
+    remotePath: 'repertory/cxb/libbt.pdb?version=$(Build.SourceBranchName)-windows-x86'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+
+- task: ArchiveFiles@2
+  displayName: 'Archive dist'
+  inputs:
+    rootFolderOrFile: dist
+    includeRootFolder: false
+    archiveType: tar
+    archiveFile: 'libbt.tar.gz'
+
+- task: cURLUploader@2
+  displayName: 'Upload libbt.passoa'
+  inputs:
+    files: 'libbt.tar.gz'
+    serviceEndpoint: 'csding.net'
+    remotePath: 'repertory/cxb/libbt.tar.gz?version=$(Build.SourceBranchName)-windows-x86'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    workingDir: './'
+    customCommand: 'run build'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  
+- task: Npm@1
+  inputs:
+    command: 'publish'
+    workingDir: './'
+    customRegistry: 'useFeed'
+    publishEndpoint: 'npmjs.org'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))

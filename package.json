@@ -1,0 +1,50 @@
+{
+	"name": "@passoa/libbt",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/index.js",
+	"types": "dist/src/index.d.ts",
+	"files": [ "/dist/*.js", "/dist/*/*.d.ts", "/binding" ],
+	"scripts": {
+		"install": "cxb -i",
+		"windows_x86": "cross-env build_type=RelWithDebInfo platform=windows arch=2019 cxb -b",
+		"build": "rimraf dist && cross-env opt=build webpack",
+		"dev": "cross-env opt=dev webpack",
+		"test": "node test/test.js",
+		"pretest": "npm run build"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {},
+	"devDependencies": {
+		"@babel/core": "^7.5.5",
+		"@babel/preset-env": "^7.5.5",
+		"@passoa/tap": "^1.0.4",
+		"@types/mkdirp": "^0.5.2",
+		"@types/node": "^12.6.8",
+		"@types/tape": "^4.2.33",
+		"babel-loader": "^8.0.6",
+		"cross-env": "^5.2.0",
+		"fs-extra": "^8.1.0",
+		"rimraf": "^2.6.3",
+		"ts-loader": "^6.0.4",
+		"typescript": "^3.5.3",
+		"webpack": "^4.36.1",
+		"webpack-bundle-analyzer": "^3.3.2",
+		"webpack-cli": "^3.3.6",
+		"@passoa/cxb": "latest"
+	},
+	"cxb": {
+		"binary": {
+			"module_name": "sqlite",
+			"module_path": "dist/",
+			"remote_path": "repertory/cxb/",
+			"package_name": "{module_name}.tar.gz?version=v1.0.0-{platform}-{arch}",
+			"host": "https://passoa-generic.pkg.coding.net"
+		},
+		"build_cmd": {
+			"windows_2019": [ "-A", "win32", "-DCMAKE_TOOLCHAIN_FILE=binding/cmake/msvc.cmake" ],
+			"windows_x86": [ "-DCMAKE_TOOLCHAIN_FILE=binding/cmake/msvc.cmake" ]
+		}
+	}
+}

@@ -1,0 +1,7 @@
+set(CMAKE_INCLUDE_PREFIX C:/Libraries/boost_1_65_1)
+
+SET(PASSOA_COMPILER_MSVC TRUE)
+add_definitions(-DPLAT_MSVC)
+
+include_directories(${CMAKE_INCLUDE_PREFIX})
+LINK_DIRECTORIES (${CMAKE_INCLUDE_PREFIX}/lib32-msvc-14.0)
